@@ -1,4 +1,4 @@
-# Uzair Shakeel's Side Work Done
+# Uzair Sarmad's Side Work Done
 
 **Date:** August 20, 2026
 
