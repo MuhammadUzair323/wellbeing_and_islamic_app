@@ -1,0 +1,15 @@
+.git/
+.dart_tool/
+.idea/
+build/
+android/
+ios/
+web/
+windows/
+macos/
+linux/
+*.lock
+*.png
+*.jpg
+*.svg
+*.log
