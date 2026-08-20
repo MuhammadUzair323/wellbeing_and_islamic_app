@@ -29,7 +29,10 @@ class _FocusSessionPageState extends State<FocusSessionPage>
   // Timer tick
   late Ticker _ticker;
   Duration _lastElapsed = Duration.zero;
+<<<<<<< HEAD
   double _fractionalSecondsAccumulated = 0.0;
+=======
+>>>>>>> 609c216cda11dd5930cde8159ed1f07450e3d9b7
 
   // Custom input
   final TextEditingController _customController = TextEditingController();
@@ -49,11 +52,18 @@ class _FocusSessionPageState extends State<FocusSessionPage>
     _customController.dispose();
     super.dispose();
   }
+<<<<<<< HEAD
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed &&
         _timerState == TimerState.running) {}
+=======
+@override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _timerState == TimerState.running) {
+    }
+>>>>>>> 609c216cda11dd5930cde8159ed1f07450e3d9b7
   }
 
   void _onTick(Duration elapsed) {
@@ -63,6 +73,7 @@ class _FocusSessionPageState extends State<FocusSessionPage>
     }
     final delta = elapsed - _lastElapsed;
     _lastElapsed = elapsed;
+<<<<<<< HEAD
 
     // Add the elapsed time to our accumulated fractional seconds
     _fractionalSecondsAccumulated += delta.inMilliseconds / 1000.0;
@@ -83,6 +94,12 @@ class _FocusSessionPageState extends State<FocusSessionPage>
         }
       });
     }
+=======
+    setState(() {
+      _remainingSeconds = (_remainingSeconds - delta.inSeconds).clamp(0, _totalSeconds);
+      if (_remainingSeconds <= 0) _onSessionComplete();
+    });
+>>>>>>> 609c216cda11dd5930cde8159ed1f07450e3d9b7
   }
 
   void _onSessionComplete() {
@@ -108,7 +125,10 @@ class _FocusSessionPageState extends State<FocusSessionPage>
     setState(() {
       _timerState = TimerState.running;
       _lastElapsed = Duration.zero;
+<<<<<<< HEAD
       _fractionalSecondsAccumulated = 0.0;
+=======
+>>>>>>> 609c216cda11dd5930cde8159ed1f07450e3d9b7
     });
     _ticker.start();
   }
@@ -122,7 +142,10 @@ class _FocusSessionPageState extends State<FocusSessionPage>
     setState(() {
       _timerState = TimerState.running;
       _lastElapsed = Duration.zero;
+<<<<<<< HEAD
       _fractionalSecondsAccumulated = 0.0;
+=======
+>>>>>>> 609c216cda11dd5930cde8159ed1f07450e3d9b7
     });
     _ticker.start();
   }
@@ -131,7 +154,10 @@ class _FocusSessionPageState extends State<FocusSessionPage>
     setState(() {
       _timerState = TimerState.idle;
       _remainingSeconds = _totalSeconds;
+<<<<<<< HEAD
       _fractionalSecondsAccumulated = 0.0;
+=======
+>>>>>>> 609c216cda11dd5930cde8159ed1f07450e3d9b7
     });
     _ticker.stop();
   }
@@ -164,8 +190,12 @@ class _FocusSessionPageState extends State<FocusSessionPage>
       _remainingSeconds = _totalSeconds;
     });
   }
+<<<<<<< HEAD
 
   @override
+=======
+@override
+>>>>>>> 609c216cda11dd5930cde8159ed1f07450e3d9b7
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
@@ -325,4 +355,8 @@ class _SessionHistoryTile extends StatelessWidget {
       ),
     );
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 609c216cda11dd5930cde8159ed1f07450e3d9b7
