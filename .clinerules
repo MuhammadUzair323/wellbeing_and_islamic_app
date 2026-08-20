@@ -1,5 +1,8 @@
 # Focus Shield & Islamic Wellbeing - Cline Rules
 
+0. Pre-Task Sync:
+   - Before analyzing codebase, creating new files, or editing code for any new task, ALWAYS execute `git pull origin main` to ensure local workspace is 100% synchronized with any teammate commits.
+
 1. Dual-Edition Architecture:
    - Always check `AppConfig.isIslamicEdition` before rendering Islamic features.
    - Keep Focus features in `lib/features/focus_engine/` and Islamic features in `lib/features/islamic_hub/`.
@@ -13,8 +16,22 @@
 3. Automated Git Discipline (End of Every Completed Task):
    - Before committing, run `flutter analyze lib/` to verify zero compile or lint errors.
    - If analysis passes with 0 errors:
-     1. Run `git pull origin main` (to ensure local branch is up to date with remote changes).
-     2. Run `git add .`
-     3. Run `git commit -m "feat/fix: <concise summary of changes>"`
-     4. Run `git push origin main`
+      1. Run `git add .`
+      2. Run `git commit -m "feat/fix: <concise summary of changes>"`
+      3. Run `git pull origin main --rebase`
+      4. Run `git push origin main`
    - If analysis fails, fix the errors first before attempting any git commands.
+
+4. uzair_progress_log.md / sarmad_progress_log.md:
+   - ALWAYS maintain the log files at the project root (`uzair_progress_log.md`, `sarmad_progress_log.md`).
+   - Before starting work on a new task, update the log with:
+     1. `current_date`
+     2. `current_time`
+     3. `task_name`
+     4. `hypothetical_estimation` in <1h / 1-3h / 3-5h / >5h format.
+   - After completing work on a task, update the log with:
+     1. `current_date`
+     2. `current_time`
+     3. `completed_task_name`
+     4. `actual_time_taken` in <1h / 1-3h / 3-5h / >5h format.
+   - Keep the log at the project root (`uzair_progress_log.md`) for easy access and review.
