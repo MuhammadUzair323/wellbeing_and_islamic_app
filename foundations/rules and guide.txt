@@ -1,0 +1,91 @@
+===================================================
+FOCUS SHIELD PROJECT - COLLABORATION & SETUP GUIDE
+===================================================
+
+--- STEP 1: ONE-TIME MACHINE SETUP (DO THIS ONCE) ---
+
+
+1. Complete everything listed in "PREREQUISITES.txt":
+    - Install VS Code with Flutter, Dart, and Cline extensions.
+    - Extract Flutter SDK into C:\src\flutter and add C:\src\flutter\bin to PATH.
+    - Install Android Studio and command-line tools.
+
+2. Accept the GitHub Invitation:
+    - Check your email or open:
+      https://github.com/MuhammadUzair323/wellbeing_and_islamic_app/invitations
+    - Click "Accept Invitation".
+
+3. Clone the Project to Your Laptop:
+    - Open Git Bash or PowerShell on your Desktop and run:
+      git clone https://github.com/MuhammadUzair323/wellbeing_and_islamic_app.git
+      cd wellbeing_and_islamic_app
+      code .
+
+4. Verify Flutter Dependencies:
+    - Inside the VS Code terminal (Ctrl + ~), run:
+      flutter pub get
+      flutter run -d chrome
+
+
+--------------------------------------------------------------------------------
+STEP 2: DAILY GOLDEN RULES (PREVENT CONFLICTS) ---
+--------------------------------------------------------------------------------
+
+
+Rule 1: PULL FIRST
+Every single time before you open Cline or write code, run:
+  git pull origin main
+
+
+Rule 2: SPLIT THE WORK (DO NOT TOUCH THE SAME FOLDER)
+- Uzair's Focus: lib/features/islamic_hub/ (Prayer Tracker, Quran, Hadith)
+- Sarmad's Focus: lib/features/focus_engine/ (Session Timers, App Blocker UI, Analytics)
+
+
+Rule 3: COMMIT & PUSH AS SOON AS A MODULE WORKS
+When Cline finishes a task and it runs without errors:
+    git add .
+    git commit -m "feat: [describe what was built]"
+    git push origin main
+
+
+--------------------------------------------------------------------------------
+STEP 3: SARMAD'S FIRST CLINE PROMPT ---
+--------------------------------------------------------------------------------
+
+Copy and paste the prompt below into the Cline panel in VS Code:
+
+"Task: Build the Focus Session Timer module inside lib/features/focus_engine/.
+
+Requirements:
+1. Create a session timer state manager using SharedPreferences to persist session logs (start time, end time, duration, label).
+2. Build a circular countdown timer UI with Start/Pause/Reset buttons and a progress ring.
+3. Support Pomodoro presets (25m Focus / 5m Break) and custom duration picker.
+4. Save completed sessions locally and display a simple history list.
+5. Keep all code strictly inside lib/features/focus_engine/ — do not touch islamic_hub.
+
+Instructions:
+- Read .clinerules before starting.
+- Follow the existing code patterns in lib/features/islamic_hub/ (domain, trackers, presentation/widgets, presentation/page).
+- Use const constructors, strict null-safety.
+- After completing the task you make a progress file named sarmad_progress_log.md also mention todays date and what what you have done also read the .clinerules"
+
+
+Instructions:
+1. Read .clinerules before starting.
+2. Build an interactive circular countdown timer screen (25m Focus / 5m Break Pomodoro presets + custom duration picker).
+3. Use SharedPreferences for local offline storage (session logs).
+4. Keep files modular and concise: domain -> trackers -> presentation/widgets -> presentation/page.
+5. After completing the task you make a progress file named sarmad_progress_log.md also mention todays date and what what you have done also read the .clinerules
+
+
+--------------------------------------------------------------------------------
+STEP 4: PROGRESS TRACKING ---
+--------------------------------------------------------------------------------
+
+Both partners maintain a personal markdown log in the repository root:
+
+- Uzair: uzair_progress_log.md
+- Sarmad: sarmad_progress_log.md
+
+This keeps all progress transparent and lets both of you see exactly what got added after every git pull.
