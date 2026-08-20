@@ -20,7 +20,7 @@ class PrayerTracker extends ChangeNotifier {
   /// Order of the flags inside the persisted day string.
   static const List<Prayer> _orderedPrayers = Prayer.values;
 
-  late Map<Prayer, bool> _todayPrayers;
+  Map<Prayer, bool> _todayPrayers = {};
   int _streak = 0;
   int _completedToday = 0;
   bool _initialized = false;

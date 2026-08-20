@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:wellbeing_and_islamic_app/app_config.dart';
 import 'package:wellbeing_and_islamic_app/core/widgets/feature_card.dart';
 import 'package:wellbeing_and_islamic_app/features/islamic_hub/domain/prayer.dart';
@@ -14,20 +15,13 @@ class IslamicHubPage extends StatefulWidget {
 }
 
 class _IslamicHubPageState extends State<IslamicHubPage> {
-  final PrayerTracker _tracker = PrayerTracker();
-
   @override
   void initState() {
     super.initState();
     // Edition guard: the whole hub only renders when Islamic edition is on.
     assert(AppConfig.isIslamicEdition);
-    _tracker.load();
-  }
-
-  @override
-  void dispose() {
-    _tracker.dispose();
-    super.dispose();
+    // Initialize tracker via Provider; load is async so we don't await here.
+    context.read<PrayerTracker>().load();
   }
 
   @override
@@ -66,9 +60,16 @@ class _IslamicHubPageState extends State<IslamicHubPage> {
   }
 
   Widget _buildPrayerSection() {
-    return AnimatedBuilder(
-      animation: _tracker,
-      builder: (context, _) {
+    return Consumer<PrayerTracker>(
+      builder: (context, tracker, child) {
+        if (!tracker.isInitialized) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -78,9 +79,9 @@ class _IslamicHubPageState extends State<IslamicHubPage> {
             ),
             const SizedBox(height: 8),
             StreakCard(
-              streak: _tracker.streak,
-              completedToday: _tracker.completedToday,
-              totalPrayers: _tracker.totalPrayers,
+              streak: tracker.streak,
+              completedToday: tracker.completedToday,
+              totalPrayers: tracker.totalPrayers,
             ),
             const SizedBox(height: 12),
             for (final prayer in Prayer.values)
@@ -88,8 +89,8 @@ class _IslamicHubPageState extends State<IslamicHubPage> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: PrayerCard(
                   prayer: prayer,
-                  completed: _tracker.todayPrayers[prayer] ?? false,
-                  onToggle: () => _tracker.togglePrayer(prayer),
+                  completed: tracker.todayPrayers[prayer] ?? false,
+                  onToggle: () => tracker.togglePrayer(prayer),
                 ),
               ),
           ],
