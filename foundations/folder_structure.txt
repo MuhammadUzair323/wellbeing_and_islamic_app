@@ -1,0 +1,39 @@
+focus_shield_suite/
+│
+├── android/                             # Native Android Layer
+│   ├── app/src/main/
+│   │   ├── AndroidManifest.xml          # Accessibility & Overlay permissions
+│   │   └── kotlin/com/puremind/
+│   │       ├── AccessibilityBlockerService.kt  # Detects active apps & doom-scrolling
+│   │       └── OverlayViewService.kt           # Draws full-screen friction/block layer
+│
+├── assets/
+│   ├── data/                            # Certified Quran JSON, Sahih Hadith, Prayer Math
+│   ├── icons/                           # Category icons & badge graphics
+│   └── images/                          # Default themes & background assets
+│
+└── lib/
+    ├── main.dart                        # App Entry Point & Edition Initialization
+    ├── app_config.dart                  # Global Flag: isIslamicEdition = true/false
+    │
+    ├── core/                            # Shared Across Both App Editions
+    │   ├── constants/                   # Colors, font sizes, storage keys
+    │   ├── theme/                       # Dark theme & clean typography
+    │   ├── services/                    # Local storage (Hive/Isar), MethodChannels to Kotlin
+    │   └── widgets/                     # Custom buttons, cards, countdown dials
+    │
+    └── features/
+        ├── focus_engine/                # Universal Focus Mode
+        │   ├── screens/                 # Dashboard, App Limit List, Analytics
+        │   └── services/                # Screen-time friction timers & blocker logic
+        │
+        ├── content_shield/              # Explicit / Adult Content Filtering
+        │   └── text_filters.dart        # Keyword and screen-reading blocking rules
+        │
+        ├── islamic_hub/                 # Islamic Wellbeing Layer (Edition B Only)
+        │   ├── screens/                 # Prayer Times, Quran Reader, Hadith Daily
+        │   ├── trackers/                # Namaz checkboxes, Quran reading streaks
+        │   └── spiritual_friction/      # Injects Ayah/Hadith onto blocked app screens
+        │
+        ├── profiles/                    # Age & Gender Profiles (Kids/Adults/Male/Female)
+        └── widgets/                     # Android Home Screen Widgets (Salah countdown)

@@ -1,0 +1,27 @@
+=====================================================
+DEVELOPMENT ENVIRONMENT PREREQUISITES
+=====================================================
+
+1. CODE EDITOR & EXTENSIONS
+   - VS Code (Already installed)
+   - Extensions to install inside VS Code:
+     * Flutter (by Dart-Code)
+     * Dart (by Dart-Code)
+     * Cline (AI Agent)
+
+2. CORE SDKs & RUNTIMES
+   - Flutter SDK (Windows):
+     * Download: https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_stable.zip
+     * Extract to: C:\src\flutter (DO NOT extract into C:\Program Files)
+     * Add to PATH: C:\src\flutter\bin
+   - Java Development Kit (JDK 17):
+     * Needed for building Android APKs locally.
+   - Android SDK & Command-line Tools:
+     * Installed via Android Studio (SDK Platforms 33/34, SDK Build-Tools, Android SDK Platform-Tools for ADB).
+
+3. VERSION CONTROL
+   - Git for Windows (Already installed)
+   - GitHub Account (Configured with SSH or Personal Access Token)
+
+4. PHYSICAL DEVICE TESTING
+   - Android Phone (Developer Options -> USB Debugging enabled).
