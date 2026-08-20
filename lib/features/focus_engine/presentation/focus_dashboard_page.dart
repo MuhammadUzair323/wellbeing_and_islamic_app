@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../domain/focus_session.dart';
 import '../trackers/focus_session_tracker.dart';
 import 'focus_session_page.dart';
+import 'session_history_page.dart';
 
 class FocusDashboardPage extends StatefulWidget {
   const FocusDashboardPage({super.key});
@@ -557,59 +558,72 @@ class _FocusDashboardPageState extends State<FocusDashboardPage> {
             ),
             const SizedBox(height: 12),
             ...sessions.map(
-              (s) => Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: theme.colorScheme.outline.withValues(alpha: 0.1),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.history,
-                      size: 18,
-                      color: theme.colorScheme.primary,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            s.label,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            '${s.formattedDate} • ${s.formattedTime}',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(
-                                alpha: 0.6,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(
-                      s.durationLabel,
-                      style: TextStyle(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+              (s) => _sessionHistoryTile(session: s),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const SessionHistoryPage(),
                 ),
               ),
+              child: const Text('View All'),
             ),
           ],
         );
       },
+    );
+  }
+
+  Widget _sessionHistoryTile({required FocusSession session}) {
+    final theme = Theme.of(context);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.1),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.history,
+            size: 18,
+            color: theme.colorScheme.primary,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  session.label,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  '${session.formattedDate} • ${session.formattedTime}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(
+                      alpha: 0.6,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            session.durationLabel,
+            style: TextStyle(
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
