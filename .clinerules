@@ -16,9 +16,9 @@
 3. Automated Git Discipline (End of Every Completed Task):
    - Before committing, run `flutter analyze lib/` to verify zero compile or lint errors.
    - If analysis passes with 0 errors:
-      1. Run `git add .`
-      2. Run `git commit -m "feat/fix: <concise summary of changes>"`
-      3. Run `git pull origin main --rebase`
+      1. Run `git pull origin main` (to integrate teammate changes before committing)
+      2. Run `git add .`
+      3. Run `git commit -m "<type>: <description>"`
       4. Run `git push origin main`
    - If analysis fails, fix the errors first before attempting any git commands.
 
