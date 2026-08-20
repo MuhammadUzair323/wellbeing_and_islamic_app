@@ -1,6 +1,6 @@
 # Progress Log
 
-## 2026-08-20: Fixed Analyzer Errors
+## 2026-08-20: Fixed Analyzer Errors & ProviderNotFoundException
 
 - Fixed relative imports in `lib/features/focus_engine/presentation/focus_session_page.dart` (changed `../../` to `../`)
 - Fixed syntax issues in `lib/features/focus_engine/presentation/focus_dashboard_page.dart`:
@@ -11,4 +11,10 @@
   - Removed unnecessary braces in string interpolation in `focus_session.dart`
   - Added `const` constructors where appropriate
   - Added `super.key` to widget constructors in `confetti_particles.dart`
-- `flutter analyze lib/` now passes with 0 issues
+- Fixed runtime `ProviderNotFoundException` for `FocusSessionTracker`:
+  - Wrapped root `MaterialApp` in `MultiProvider` in `lib/main.dart`
+  - Added `ChangeNotifierProvider(create: (_) => FocusSessionTracker())` at root
+  - Added `ChangeNotifierProvider(create: (_) => PrayerTracker())` at root for Islamic hub
+  - Updated `FocusSessionTracker` to have a public constructor for Provider compatibility
+- Verified all `context.read<FocusSessionTracker>()` and `Consumer<FocusSessionTracker>` calls in `focus_session_page.dart` reference the root provider correctly
+- `flutter analyze lib/` passes with 0 issues

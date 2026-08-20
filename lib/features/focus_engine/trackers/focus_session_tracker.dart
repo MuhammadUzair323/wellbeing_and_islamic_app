@@ -5,11 +5,9 @@ import '../domain/focus_session.dart';
 
 /// State manager for focus sessions using SharedPreferences.
 class FocusSessionTracker extends ChangeNotifier {
-  FocusSessionTracker._();
+  FocusSessionTracker();
 
   static const String _sessionsKey = 'focus_sessions';
-  static final FocusSessionTracker _instance = FocusSessionTracker._();
-  static FocusSessionTracker get instance => _instance;
 
   List<FocusSession> _sessions = [];
   bool _isInitialized = false;

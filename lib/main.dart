@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:wellbeing_and_islamic_app/app_config.dart';
 import 'package:wellbeing_and_islamic_app/core/theme/app_theme.dart';
 import 'package:wellbeing_and_islamic_app/features/focus_engine/presentation/focus_dashboard_page.dart';
+import 'package:wellbeing_and_islamic_app/features/focus_engine/trackers/focus_session_tracker.dart';
 import 'package:wellbeing_and_islamic_app/features/islamic_hub/presentation/islamic_hub_page.dart';
+import 'package:wellbeing_and_islamic_app/features/islamic_hub/trackers/prayer_tracker.dart';
 
 void main() {
   runApp(const WellbeingApp());
@@ -13,13 +16,19 @@ class WellbeingApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: AppConfig.isIslamicEdition
-          ? 'Focus Shield & Islamic Wellbeing Suite'
-          : 'Focus Shield',
-      theme: AppTheme.darkTheme,
-      home: const HomeDashboard(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => FocusSessionTracker()),
+        ChangeNotifierProvider(create: (_) => PrayerTracker()),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: AppConfig.isIslamicEdition
+            ? 'Focus Shield & Islamic Wellbeing Suite'
+            : 'Focus Shield',
+        theme: AppTheme.darkTheme,
+        home: const HomeDashboard(),
+      ),
     );
   }
 }
