@@ -1,0 +1,11 @@
+# Focus Shield & Islamic Wellbeing - Cline Rules
+
+1. Dual-Edition Architecture:
+   - Always check `AppConfig.isIslamicEdition` before rendering Islamic features.
+   - Keep Focus features in `lib/features/focus_engine/` and Islamic features in `lib/features/islamic_hub/`.
+   - Shared widgets belong in `lib/core/widgets/`.
+
+2. Code Quality:
+   - Use strict null-safety and const constructors.
+   - Use SharedPreferences for local offline storage (streaks, settings, focus logs).
+   - Keep files modular and concise.
