@@ -35,3 +35,13 @@
      3. `completed_task_name`
      4. `actual_time_taken` in <1h / 1-3h / 3-5h / >5h format.
    - Keep the log at the project root (`uzair_progress_log.md`) for easy access and review.
+
+5. Coordination with Teammate (Uzair ↔ Sarmad):
+   - ALWAYS read and follow `coordination_plan.md` before starting any task.
+   - Each contributor works ONLY within their assigned scope:
+     - Uzair: `lib/features/focus_engine/` and `lib/core/` (architecture only)
+     - Sarmad: `lib/features/islamic_hub/` and `lib/core/` (architecture only)
+   - NEVER modify the other contributor's files without explicit coordination.
+   - Before editing any file, check `coordination_plan.md` daily log to ensure no overlap.
+   - If a conflict arises, update the daily log and coordinate with the teammate before resolving.
+   - After completing your assigned task, update the daily coordination log in `coordination_plan.md`.
