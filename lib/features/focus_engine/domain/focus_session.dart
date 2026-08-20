@@ -40,6 +40,7 @@ class FocusSession {
 enum FocusPreset {
   pomodoro(25, 'Pomodoro', Icons.timer_outlined),
   deepWork(50, 'Deep Work', Icons.work_outline),
+  reset(15, 'Reset', Icons.refresh_outlined),
   shortBreak(5, 'Short Break', Icons.coffee_outlined);
 
   const FocusPreset(this.minutes, this.label, this.icon);

@@ -22,4 +22,5 @@
   - Updated `islamic_hub_page.dart` to use `Consumer<PrayerTracker>` with loading guard instead of local `PrayerTracker()` instance and `AnimatedBuilder`
   - Added loading indicator while `tracker.isInitialized` is false
 - Updated root navigation shell in `lib/main.dart` to use `IndexedStack` so both tabs stay mounted and don't re-run async initialization on tab switches
+- Fixed analyzer error regarding `preset` parameter in FocusSessionPage by aligning the constructor call in `_navigateToFullTimer()` in `focus_dashboard_page.dart` to use `const FocusSessionPage()` since the constructor does not accept a preset parameter.
 - `flutter analyze lib/` passes with 0 issues
