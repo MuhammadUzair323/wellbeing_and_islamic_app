@@ -25,7 +25,7 @@ class PrayerTracker extends ChangeNotifier {
   DateTime? _activeDate;
 
   int _streak = 0;
-  int _completedToday = 0;
+  bool _hasWarning = false;
   bool _initialized = false;
 
   /// Current completion state for the active date's prayers.
@@ -33,7 +33,12 @@ class PrayerTracker extends ChangeNotifier {
       Map<Prayer, bool>.unmodifiable(_activeDatePrayers);
 
   /// Active streak: consecutive days (ending at activeDate) with all 5 prayers done.
+  /// Resets to 0 immediately when any prayer is missed.
   int get streak => _streak;
+
+  /// Whether the streak is in warning state (previous day incomplete).
+  /// User must complete all prayers today to avoid streak reset.
+  bool get hasWarning => _hasWarning;
 
   /// Number of prayers completed so far on the active date.
   int get completedOnActiveDate => _completedToday;
@@ -44,6 +49,8 @@ class PrayerTracker extends ChangeNotifier {
   /// True when every prayer for the active date is checked.
   bool get allCompletedOnActiveDate => _completedToday == totalPrayers;
 
+  int get _completedToday => _activeDatePrayers.values.where((v) => v).length;
+
   /// Whether [loadForDate] has finished at least once.
   bool get isInitialized => _initialized;
 
@@ -53,9 +60,8 @@ class PrayerTracker extends ChangeNotifier {
     final dateKey = _formatDate(date);
 
     _activeDatePrayers = _decodeDay(prefs.getString('$_dayKeyPrefix$dateKey'));
-    _completedToday = _countCompleted(_activeDatePrayers);
-    _streak = await _computeStreak(prefs, date);
     _activeDate = date;
+    _updateStreakAndWarning(prefs, date);
     _initialized = true;
     notifyListeners();
   }
@@ -77,32 +83,52 @@ class PrayerTracker extends ChangeNotifier {
     }
 
     _activeDatePrayers[prayer] = !(_activeDatePrayers[prayer] ?? false);
-    _completedToday = _countCompleted(_activeDatePrayers);
 
     await prefs.setString(
         '$_dayKeyPrefix${_formatDate(_activeDate ?? DateTime.now())}',
         _encodeDay(_activeDatePrayers));
     await prefs.setString(_lastActiveDayKey, _formatDate(DateTime.now()));
 
-    _streak = await _computeStreak(prefs, _activeDate ?? DateTime.now());
+    _updateStreakAndWarning(prefs, _activeDate ?? DateTime.now());
     notifyListeners();
   }
 
-  // ---------------------------------------------------------------------------
-  // Streak calculation
-  // ---------------------------------------------------------------------------
+  /// Updates streak and warning state based on current date and previous day.
+  void _updateStreakAndWarning(SharedPreferences prefs, DateTime date) {
+    final todayComplete =
+        _decodeDay(prefs.getString('$_dayKeyPrefix${_formatDate(date)}'))
+            .values
+            .every((v) => v);
 
-  /// Walks backward from [today].
-  /// - [today] counts toward the streak only if it is fully complete (otherwise
-  ///   an in-progress day does not break the streak, it just isn't counted).
-  /// - Every earlier day must be fully complete; the first incomplete day
-  ///   breaks the streak.
-  Future<int> _computeStreak(
-    SharedPreferences prefs,
-    DateTime today,
-  ) async {
+    final yesterday = date.subtract(const Duration(days: 1));
+    final yesterdayComplete =
+        _decodeDay(prefs.getString('$_dayKeyPrefix${_formatDate(yesterday)}'))
+            .values
+            .every((v) => v);
+
+    if (todayComplete) {
+      if (yesterdayComplete) {
+        // Continuing streak: increment previous day's streak
+        final yesterdayStreak = _getStreakForDate(prefs, yesterday);
+        _streak = yesterdayStreak + 1;
+        _hasWarning = false;
+      } else {
+        // Recovered from warning: start new streak of 1
+        _streak = 1;
+        _hasWarning = false;
+      }
+    } else {
+      // Incomplete day: streak broken
+      _streak = 0;
+      _hasWarning = yesterdayComplete; // Warn only if we had a streak to lose
+    }
+  }
+
+  /// Gets the streak value for a specific date by computing it.
+  int _getStreakForDate(SharedPreferences prefs, DateTime date) {
+    // Compute streak ending at [date]
     int count = 0;
-    DateTime cursor = today;
+    DateTime cursor = date;
 
     final todayComplete =
         _decodeDay(prefs.getString('$_dayKeyPrefix${_formatDate(cursor)}'))
@@ -147,10 +173,6 @@ class PrayerTracker extends ChangeNotifier {
       buffer.write((day[prayer] ?? false) ? '1' : '0');
     }
     return buffer.toString();
-  }
-
-  int _countCompleted(Map<Prayer, bool> day) {
-    return day.values.where((v) => v).length;
   }
 
   String _formatDate(DateTime date) {

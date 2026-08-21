@@ -63,11 +63,53 @@ class _IslamicHubPageState extends State<IslamicHubPage> {
     }
   }
 
-  void _changeDate(int days) {
-    setState(() {
-      _selectedDate = _selectedDate.add(Duration(days: days));
-    });
-    _loadSelectedDate();
+  Future<void> _selectDate(BuildContext context) async {
+    final now = DateTime.now();
+    final initialDate =
+        DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
+
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(2020), // Reasonable minimum
+      lastDate: now, // Restrict to past dates and today only
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Theme.of(context).colorScheme.primary,
+              onPrimary: Colors.white,
+              surface: Theme.of(context).colorScheme.surface,
+              onSurface: Colors.black,
+            ),
+            dialogTheme: const DialogThemeData(
+              backgroundColor: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedDate != null && pickedDate != _selectedDate) {
+      setState(() {
+        _selectedDate =
+            DateTime(pickedDate.year, pickedDate.month, pickedDate.day);
+      });
+      _loadSelectedDate();
+    }
+  }
+
+  void _goToToday() {
+    final now = DateTime.now();
+    if (_selectedDate.year != now.year ||
+        _selectedDate.month != now.month ||
+        _selectedDate.day != now.day) {
+      setState(() {
+        _selectedDate = DateTime(now.year, now.month, now.day);
+      });
+      _loadSelectedDate();
+    }
   }
 
   @override
@@ -84,7 +126,7 @@ class _IslamicHubPageState extends State<IslamicHubPage> {
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-              _buildDateSelector(),
+              _buildDateSelector(context),
               const SizedBox(height: 16),
               _buildPrayerSection(),
               const SizedBox(height: 24),
@@ -110,27 +152,53 @@ class _IslamicHubPageState extends State<IslamicHubPage> {
     );
   }
 
-  Widget _buildDateSelector() {
+  Widget _buildDateSelector(BuildContext context) {
+    final bool isToday = _isSameDay(_selectedDate, DateTime.now());
+    final Color labelColor = isToday
+        ? Theme.of(context).colorScheme.primary
+        : Theme.of(context).colorScheme.secondary;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        IconButton(
-          icon: const Icon(Icons.chevron_left),
-          onPressed: () => _changeDate(-1),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text(
-            _formatDate(_selectedDate),
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        // Today button
+        ElevatedButton.icon(
+          icon: const Icon(Icons.today),
+          label: const Text('Today'),
+          onPressed: _goToToday,
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           ),
         ),
-        IconButton(
-          icon: const Icon(Icons.chevron_right),
-          onPressed: () => _changeDate(1),
+        const SizedBox(width: 12),
+        // Date selector
+        ElevatedButton.icon(
+          icon: const Icon(Icons.calendar_today),
+          label: Text(
+            _formatDate(_selectedDate),
+            style: TextStyle(color: labelColor),
+          ),
+          onPressed: () => _selectDate(context),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          ),
         ),
+        // Visual indicator for past dates
+        if (!isToday)
+          Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.secondary,
+              shape: BoxShape.circle,
+            ),
+          ),
       ],
     );
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
   String _formatDate(DateTime date) {
@@ -183,6 +251,7 @@ class _IslamicHubPageState extends State<IslamicHubPage> {
               streak: tracker.streak,
               completedToday: tracker.completedOnActiveDate,
               totalPrayers: tracker.totalPrayers,
+              hasWarning: tracker.hasWarning,
             ),
             const SizedBox(height: 12),
             for (final prayer in Prayer.values)

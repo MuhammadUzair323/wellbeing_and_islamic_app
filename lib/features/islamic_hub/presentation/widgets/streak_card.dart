@@ -8,17 +8,38 @@ class StreakCard extends StatelessWidget {
     required this.streak,
     required this.completedToday,
     required this.totalPrayers,
+    this.hasWarning = false,
   });
 
   final int streak;
   final int completedToday;
   final int totalPrayers;
+  final bool hasWarning;
+
+  // Get milestone icons based on streak
+  IconData? _getMilestoneIcon() {
+    if (streak >= 100) return Icons.emoji_events;
+    if (streak >= 30) return Icons.star;
+    if (streak >= 7) return Icons.check_circle;
+    return null;
+  }
+
+  // Get milestone color based on streak
+  Color _getMilestoneColor(BuildContext context) {
+    if (streak >= 100) return Theme.of(context).colorScheme.secondary;
+    if (streak >= 30) return Colors.amber;
+    if (streak >= 7) return Colors.green;
+    return Theme.of(context).colorScheme.primary;
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final accent = theme.colorScheme.primary;
+    const warningColor = Colors.orange;
     final progress = totalPrayers == 0 ? 0.0 : completedToday / totalPrayers;
+    final milestoneIcon = _getMilestoneIcon();
+    final milestoneColor = _getMilestoneColor(context);
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -29,14 +50,36 @@ class StreakCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.local_fire_department_outlined,
-                    color: accent, size: 28),
+                // Milestone icon if applicable
+                if (milestoneIcon != null)
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: milestoneColor.withAlpha(50),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      milestoneIcon,
+                      color: milestoneColor,
+                      size: 20,
+                    ),
+                  )
+                else
+                  const SizedBox(width: 24), // Space for alignment
+
+                const SizedBox(width: 8),
+
+                Icon(
+                  Icons.local_fire_department_outlined,
+                  color: hasWarning ? warningColor : accent,
+                  size: 28,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   '$streak',
                   style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: accent,
+                    color: hasWarning ? warningColor : accent,
                   ),
                 ),
                 const SizedBox(width: 6),
@@ -59,11 +102,43 @@ class StreakCard extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: progress,
                 minHeight: 8,
-                backgroundColor:
-                    theme.colorScheme.onSurface.withValues(alpha: 0.08),
-                color: accent,
+                backgroundColor: theme.colorScheme.onSurface.withAlpha(20),
+                color: hasWarning ? warningColor : accent,
               ),
             ),
+            if (hasWarning)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  'Complete all prayers today to keep your streak!',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: warningColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            if (milestoneIcon != null && !hasWarning)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Row(
+                  children: [
+                    Icon(
+                      milestoneIcon,
+                      color: milestoneColor,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$streak day streak!',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: milestoneColor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
