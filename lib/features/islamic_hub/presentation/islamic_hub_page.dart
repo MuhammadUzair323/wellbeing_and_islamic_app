@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wellbeing_and_islamic_app/app_config.dart';
@@ -15,48 +16,148 @@ class IslamicHubPage extends StatefulWidget {
 }
 
 class _IslamicHubPageState extends State<IslamicHubPage> {
+  late final PrayerTracker _tracker;
+  DateTime _selectedDate = DateTime.now();
+  Timer? _midnightTimer;
+
   @override
   void initState() {
     super.initState();
-    // Edition guard: the whole hub only renders when Islamic edition is on.
     assert(AppConfig.isIslamicEdition);
-    // Initialize tracker via Provider; load is async so we don't await here.
-    context.read<PrayerTracker>().load();
+    _tracker = PrayerTracker();
+    _loadSelectedDate();
+    _startMidnightTimer();
+  }
+
+  @override
+  void dispose() {
+    _midnightTimer?.cancel();
+    super.dispose();
+  }
+
+  void _loadSelectedDate() {
+    _tracker.loadForDate(_selectedDate);
+  }
+
+  void _startMidnightTimer() {
+    final now = DateTime.now();
+    final midnight = DateTime(now.year, now.month, now.day + 1);
+    final duration = midnight.difference(now);
+    _midnightTimer = Timer(duration, _onMidnight);
+  }
+
+  void _onMidnight() {
+    if (mounted) {
+      // If user is viewing today, update to the new day at midnight.
+      final now = DateTime.now();
+      if (_selectedDate.year == now.year &&
+          _selectedDate.month == now.month &&
+          _selectedDate.day == now.day) {
+        setState(() {
+          _selectedDate = DateTime.now();
+        });
+        _loadSelectedDate();
+      }
+      // Schedule next midnight
+      _startMidnightTimer();
+    }
+  }
+
+  void _changeDate(int days) {
+    setState(() {
+      _selectedDate = _selectedDate.add(Duration(days: days));
+    });
+    _loadSelectedDate();
   }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            const Text(
-              'Islamic Hub',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            _buildPrayerSection(),
-            const SizedBox(height: 24),
-            const Text(
-              'More',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-            const FeatureCard(
-              icon: Icons.menu_book_outlined,
-              title: 'Quran Streak Logging',
-              subtitle: 'Record daily recitation and build streaks.',
-            ),
-            const FeatureCard(
-              icon: Icons.auto_awesome_outlined,
-              title: 'Ayah & Hadith Reminder',
-              subtitle: 'Receive authentic daily spiritual reminders.',
-            ),
-          ],
+    return ChangeNotifierProvider<PrayerTracker>.value(
+      value: _tracker,
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: ListView(
+            children: [
+              const Text(
+                'Islamic Hub',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              _buildDateSelector(),
+              const SizedBox(height: 16),
+              _buildPrayerSection(),
+              const SizedBox(height: 24),
+              const Text(
+                'More',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              const FeatureCard(
+                icon: Icons.menu_book_outlined,
+                title: 'Quran Streak Logging',
+                subtitle: 'Record daily recitation and build streaks.',
+              ),
+              const FeatureCard(
+                icon: Icons.auto_awesome_outlined,
+                title: 'Ayah & Hadith Reminder',
+                subtitle: 'Receive authentic daily spiritual reminders.',
+              ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Widget _buildDateSelector() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.chevron_left),
+          onPressed: () => _changeDate(-1),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Text(
+            _formatDate(_selectedDate),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.chevron_right),
+          onPressed: () => _changeDate(1),
+        ),
+      ],
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    // Use intl if available, otherwise fallback to simple format.
+    // For simplicity, we use a readable format without extra dependency.
+    return '${_getDayName(date.weekday)}, ${date.month}/${date.day}/${date.year}';
+  }
+
+  String _getDayName(int weekday) {
+    switch (weekday) {
+      case DateTime.monday:
+        return 'Mon';
+      case DateTime.tuesday:
+        return 'Tue';
+      case DateTime.wednesday:
+        return 'Wed';
+      case DateTime.thursday:
+        return 'Thu';
+      case DateTime.friday:
+        return 'Fri';
+      case DateTime.saturday:
+        return 'Sat';
+      case DateTime.sunday:
+        return 'Sun';
+      default:
+        return '';
+    }
   }
 
   Widget _buildPrayerSection() {
@@ -80,7 +181,7 @@ class _IslamicHubPageState extends State<IslamicHubPage> {
             const SizedBox(height: 8),
             StreakCard(
               streak: tracker.streak,
-              completedToday: tracker.completedToday,
+              completedToday: tracker.completedOnActiveDate,
               totalPrayers: tracker.totalPrayers,
             ),
             const SizedBox(height: 12),
@@ -89,7 +190,7 @@ class _IslamicHubPageState extends State<IslamicHubPage> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: PrayerCard(
                   prayer: prayer,
-                  completed: tracker.todayPrayers[prayer] ?? false,
+                  completed: tracker.activeDatePrayers[prayer] ?? false,
                   onToggle: () => tracker.togglePrayer(prayer),
                 ),
               ),

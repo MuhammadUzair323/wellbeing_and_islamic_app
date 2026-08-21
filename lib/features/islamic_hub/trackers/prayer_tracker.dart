@@ -9,8 +9,6 @@ import 'package:wellbeing_and_islamic_app/features/islamic_hub/domain/prayer.dar
 ///     fixed order Fajr, Dhuhr, Asr, Maghrib, Isha.
 ///   - `prayer_last_active_day` : the last date string the user interacted with.
 ///
-/// Because every calendar day is stored under its own date-keyed entry, a new
-/// day automatically starts with all prayers unchecked (reset on new day).
 class PrayerTracker extends ChangeNotifier {
   PrayerTracker();
 
@@ -20,65 +18,73 @@ class PrayerTracker extends ChangeNotifier {
   /// Order of the flags inside the persisted day string.
   static const List<Prayer> _orderedPrayers = Prayer.values;
 
-  Map<Prayer, bool> _todayPrayers = {};
+  /// Current completion state for the [activeDate]'s prayers.
+  Map<Prayer, bool> _activeDatePrayers = {};
+
+  /// The date whose prayers and streak are currently loaded.
+  DateTime? _activeDate;
+
   int _streak = 0;
   int _completedToday = 0;
   bool _initialized = false;
 
-  /// Current completion state for each of today's prayers.
-  Map<Prayer, bool> get todayPrayers =>
-      Map<Prayer, bool>.unmodifiable(_todayPrayers);
+  /// Current completion state for the active date's prayers.
+  Map<Prayer, bool> get activeDatePrayers =>
+      Map<Prayer, bool>.unmodifiable(_activeDatePrayers);
 
-  /// Active streak: consecutive days (ending today) with all 5 prayers done.
+  /// Active streak: consecutive days (ending at activeDate) with all 5 prayers done.
   int get streak => _streak;
 
-  /// Number of prayers completed so far today.
-  int get completedToday => _completedToday;
+  /// Number of prayers completed so far on the active date.
+  int get completedOnActiveDate => _completedToday;
 
   /// Total number of prayers tracked per day (5).
   int get totalPrayers => _orderedPrayers.length;
 
-  /// True when every prayer for today is checked.
-  bool get allCompletedToday => _completedToday == totalPrayers;
+  /// True when every prayer for the active date is checked.
+  bool get allCompletedOnActiveDate => _completedToday == totalPrayers;
 
-  /// Whether [load] has finished at least once.
+  /// Whether [loadForDate] has finished at least once.
   bool get isInitialized => _initialized;
 
-  /// Loads today's state (auto-resets for a new calendar day) and the streak.
-  Future<void> load() async {
+  /// Loads the state for [date] (auto-resets for that calendar day) and its streak.
+  Future<void> loadForDate(DateTime date) async {
     final prefs = await SharedPreferences.getInstance();
-    final today = _formatDate(DateTime.now());
+    final dateKey = _formatDate(date);
 
-    _todayPrayers = _decodeDay(prefs.getString('$_dayKeyPrefix$today'));
-    _completedToday = _countCompleted(_todayPrayers);
-    _streak = await _computeStreak(prefs, DateTime.now());
+    _activeDatePrayers = _decodeDay(prefs.getString('$_dayKeyPrefix$dateKey'));
+    _completedToday = _countCompleted(_activeDatePrayers);
+    _streak = await _computeStreak(prefs, date);
+    _activeDate = date;
     _initialized = true;
     notifyListeners();
   }
 
-  /// Toggles a single prayer for today and persists the change.
+  /// Toggles a single prayer for the active date and persists the change.
   Future<void> togglePrayer(Prayer prayer) async {
     if (!_initialized) {
-      await load();
+      await loadForDate(DateTime.now());
     }
 
     final prefs = await SharedPreferences.getInstance();
     final today = _formatDate(DateTime.now());
 
-    // Defensive: if the day rolled over between load() and this call, refresh.
+    // Defensive: if the day rolled over between load and this call, refresh.
     final storedToday = prefs.getString('$_dayKeyPrefix$today');
-    if (storedToday != _encodeDay(_todayPrayers) &&
+    if (storedToday != _encodeDay(_activeDatePrayers) &&
         _formatDate(DateTime.now()) != today) {
-      _todayPrayers = _decodeDay(storedToday);
+      _activeDatePrayers = _decodeDay(storedToday);
     }
 
-    _todayPrayers[prayer] = !(_todayPrayers[prayer] ?? false);
-    _completedToday = _countCompleted(_todayPrayers);
+    _activeDatePrayers[prayer] = !(_activeDatePrayers[prayer] ?? false);
+    _completedToday = _countCompleted(_activeDatePrayers);
 
-    await prefs.setString('$_dayKeyPrefix$today', _encodeDay(_todayPrayers));
-    await prefs.setString(_lastActiveDayKey, today);
+    await prefs.setString(
+        '$_dayKeyPrefix${_formatDate(_activeDate ?? DateTime.now())}',
+        _encodeDay(_activeDatePrayers));
+    await prefs.setString(_lastActiveDayKey, _formatDate(DateTime.now()));
 
-    _streak = await _computeStreak(prefs, DateTime.now());
+    _streak = await _computeStreak(prefs, _activeDate ?? DateTime.now());
     notifyListeners();
   }
 
@@ -87,7 +93,7 @@ class PrayerTracker extends ChangeNotifier {
   // ---------------------------------------------------------------------------
 
   /// Walks backward from [today].
-  /// - Today counts toward the streak only if it is fully complete (otherwise
+  /// - [today] counts toward the streak only if it is fully complete (otherwise
   ///   an in-progress day does not break the streak, it just isn't counted).
   /// - Every earlier day must be fully complete; the first incomplete day
   ///   breaks the streak.
