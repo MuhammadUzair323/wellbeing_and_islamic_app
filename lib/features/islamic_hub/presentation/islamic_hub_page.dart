@@ -7,6 +7,7 @@ import 'package:wellbeing_and_islamic_app/features/islamic_hub/domain/prayer.dar
 import 'package:wellbeing_and_islamic_app/features/islamic_hub/presentation/widgets/prayer_card.dart';
 import 'package:wellbeing_and_islamic_app/features/islamic_hub/presentation/widgets/streak_card.dart';
 import 'package:wellbeing_and_islamic_app/features/islamic_hub/trackers/prayer_tracker.dart';
+import 'package:wellbeing_and_islamic_app/features/islamic_hub/utils/islamic_calendar.dart';
 
 class IslamicHubPage extends StatefulWidget {
   const IslamicHubPage({super.key});
@@ -127,6 +128,8 @@ class _IslamicHubPageState extends State<IslamicHubPage> {
               ),
               const SizedBox(height: 16),
               _buildDateSelector(context),
+              const SizedBox(height: 12),
+              _buildIslamicCalendarInfo(context),
               const SizedBox(height: 16),
               _buildPrayerSection(),
               const SizedBox(height: 24),
@@ -148,6 +151,67 @@ class _IslamicHubPageState extends State<IslamicHubPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildIslamicCalendarInfo(BuildContext context) {
+    final theme = Theme.of(context);
+    final hijriDateString = IslamicCalendar.formatHijriDate(_selectedDate);
+    final events = IslamicCalendar.getIslamicEvents(_selectedDate);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.1),
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.calendar_month,
+                size: 18,
+                color: theme.colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                hijriDateString,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
+          if (events.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              alignment: WrapAlignment.center,
+              children: events.map((event) {
+                return Chip(
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                  backgroundColor: theme.colorScheme.primaryContainer,
+                  label: Text(
+                    event,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onPrimaryContainer,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ],
       ),
     );
   }

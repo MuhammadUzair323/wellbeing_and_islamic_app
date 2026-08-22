@@ -48,31 +48,6 @@ class _FocusDashboardPageState extends State<FocusDashboardPage> {
     return 'Good Evening';
   }
 
-  int _calculateStreak(List<FocusSession> sessions) {
-    if (sessions.isEmpty) return 0;
-    int streak = 0;
-    final now = DateTime.now();
-    DateTime checkDate = DateTime(now.year, now.month, now.day);
-
-    for (int i = 0; i < 365; i++) {
-      final hasSession = sessions.any((s) {
-        return s.startTime.year == checkDate.year &&
-            s.startTime.month == checkDate.month &&
-            s.startTime.day == checkDate.day;
-      });
-
-      if (hasSession) {
-        streak++;
-        checkDate = checkDate.subtract(const Duration(days: 1));
-      } else if (i == 0) {
-        checkDate = checkDate.subtract(const Duration(days: 1));
-      } else {
-        break;
-      }
-    }
-    return streak;
-  }
-
   Widget _buildHeader(ThemeData theme) {
     final now = DateTime.now();
     final greeting = _getGreeting(now.hour);
@@ -89,7 +64,6 @@ class _FocusDashboardPageState extends State<FocusDashboardPage> {
           0,
           (sum, s) => sum + s.durationMinutes,
         );
-        final currentStreak = _calculateStreak(tracker.sessions);
 
         return Container(
           padding: const EdgeInsets.all(18),
@@ -116,7 +90,8 @@ class _FocusDashboardPageState extends State<FocusDashboardPage> {
                     Text(
                       'Ready to focus today?',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -126,7 +101,7 @@ class _FocusDashboardPageState extends State<FocusDashboardPage> {
                       children: [
                         _buildStatChip(
                           icon: Icons.local_fire_department,
-                          label: '$currentStreak day streak',
+                          label: '${tracker.currentStreak} day streak',
                           theme: theme,
                         ),
                         _buildStatChip(
@@ -292,14 +267,12 @@ class _FocusDashboardPageState extends State<FocusDashboardPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected
-              ? Colors.white
-              : Colors.white.withValues(alpha: 0.18),
+          color:
+              isSelected ? Colors.white : Colors.white.withValues(alpha: 0.18),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected
-                ? Colors.white
-                : Colors.white.withValues(alpha: 0.3),
+            color:
+                isSelected ? Colors.white : Colors.white.withValues(alpha: 0.3),
           ),
         ),
         child: Text(
@@ -385,7 +358,8 @@ class _FocusDashboardPageState extends State<FocusDashboardPage> {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                        color:
+                            theme.colorScheme.primary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -407,7 +381,8 @@ class _FocusDashboardPageState extends State<FocusDashboardPage> {
                     Text(
                       item.description,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -489,7 +464,8 @@ class _FocusDashboardPageState extends State<FocusDashboardPage> {
                 );
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(14),

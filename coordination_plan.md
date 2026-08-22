@@ -41,7 +41,7 @@
 |------|-------------|-----------|----------|
 | S-1 | Implement Quran Streak Logging feature | 3-5h | High |
 | S-2 | Implement Ayah & Hadith Reminder (local notifications) | 3-5h | High |
-| S-3 | Add Islamic calendar integration ( Hijri date display) | 2-3h | Medium |
+| S-3 | Add Islamic calendar integration (Hijri date display) | 2-3h | Medium | ✅ Completed 2026-08-22 |
 
 ### Both — Cross-Cutting Concerns
 | Task | Description | Assigned To |
@@ -57,12 +57,13 @@
 > Updated by Cline before each task. Both contributors must update this log
 > after completing their assigned work for the day.
 
-### 2026-08-21 (Today)
+### 2026-08-22 (Today)
 
 | Time | Contributor | Task | Status |
 |------|-------------|------|--------|
 | 01:11 | Uzair | chore: add pre-task git sync to clinerules | Completed |
 | 01:17 | Sarmad | Added contributors.md with push/pull records | Completed |
+| 16:47 | Sarmad | feat: Islamic Hub - Hijri calendar integration & day name fix | Completed |
 
 ---
 

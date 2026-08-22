@@ -1,16 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wellbeing_and_islamic_app/core/streak_tracker.dart';
 import 'package:wellbeing_and_islamic_app/features/islamic_hub/domain/prayer.dart';
 
 /// State manager for the Daily Prayer (Namaz) Tracker.
 ///
-/// Persistence model (SharedPreferences):
-///   - `prayer_day_YYYY-MM-DD` : a 5 character string of "0"/"1" flags in the
-///     fixed order Fajr, Dhuhr, Asr, Maghrib, Isha.
-///   - `prayer_last_active_day` : the last date string the user interacted with.
-///
+/// Uses a generic StreakTracker for streak logic while maintaining
+/// prayer-specific storage for individual prayer completion states.
 class PrayerTracker extends ChangeNotifier {
-  PrayerTracker();
+  PrayerTracker() : _streakTracker = StreakTracker(habitId: 'prayer_tracker');
+
+  final StreakTracker _streakTracker;
 
   static const String _dayKeyPrefix = 'prayer_day_';
   static const String _lastActiveDayKey = 'prayer_last_active_day';
@@ -24,8 +24,6 @@ class PrayerTracker extends ChangeNotifier {
   /// The date whose prayers and streak are currently loaded.
   DateTime? _activeDate;
 
-  int _streak = 0;
-  bool _hasWarning = false;
   bool _initialized = false;
 
   /// Current completion state for the active date's prayers.
@@ -34,11 +32,11 @@ class PrayerTracker extends ChangeNotifier {
 
   /// Active streak: consecutive days (ending at activeDate) with all 5 prayers done.
   /// Resets to 0 immediately when any prayer is missed.
-  int get streak => _streak;
+  int get streak => _streakTracker.currentStreak;
 
   /// Whether the streak is in warning state (previous day incomplete).
   /// User must complete all prayers today to avoid streak reset.
-  bool get hasWarning => _hasWarning;
+  bool get hasWarning => _streakTracker.isInWarning;
 
   /// Number of prayers completed so far on the active date.
   int get completedOnActiveDate => _completedToday;
@@ -61,7 +59,11 @@ class PrayerTracker extends ChangeNotifier {
 
     _activeDatePrayers = _decodeDay(prefs.getString('$_dayKeyPrefix$dateKey'));
     _activeDate = date;
-    _updateStreakAndWarning(prefs, date);
+
+    // Update streak tracker based on whether all prayers were completed today
+    final todayComplete = _activeDatePrayers.values.every((v) => v);
+    await _streakTracker.setCompleted(date, todayComplete);
+
     _initialized = true;
     notifyListeners();
   }
@@ -89,69 +91,20 @@ class PrayerTracker extends ChangeNotifier {
         _encodeDay(_activeDatePrayers));
     await prefs.setString(_lastActiveDayKey, _formatDate(DateTime.now()));
 
-    _updateStreakAndWarning(prefs, _activeDate ?? DateTime.now());
+    // Update streak tracker based on whether all prayers are completed today
+    final todayComplete = _activeDatePrayers.values.every((v) => v);
+    await _streakTracker.setCompleted(
+        _activeDate ?? DateTime.now(), todayComplete);
+
     notifyListeners();
   }
 
-  /// Updates streak and warning state based on current date and previous day.
-  void _updateStreakAndWarning(SharedPreferences prefs, DateTime date) {
-    final todayComplete =
-        _decodeDay(prefs.getString('$_dayKeyPrefix${_formatDate(date)}'))
-            .values
-            .every((v) => v);
-
-    final yesterday = date.subtract(const Duration(days: 1));
-    final yesterdayComplete =
-        _decodeDay(prefs.getString('$_dayKeyPrefix${_formatDate(yesterday)}'))
-            .values
-            .every((v) => v);
-
-    if (todayComplete) {
-      if (yesterdayComplete) {
-        // Continuing streak: increment previous day's streak
-        final yesterdayStreak = _getStreakForDate(prefs, yesterday);
-        _streak = yesterdayStreak + 1;
-        _hasWarning = false;
-      } else {
-        // Recovered from warning: start new streak of 1
-        _streak = 1;
-        _hasWarning = false;
-      }
-    } else {
-      // Incomplete day: streak broken
-      _streak = 0;
-      _hasWarning = yesterdayComplete; // Warn only if we had a streak to lose
-    }
-  }
-
-  /// Gets the streak value for a specific date by computing it.
-  int _getStreakForDate(SharedPreferences prefs, DateTime date) {
-    // Compute streak ending at [date]
-    int count = 0;
-    DateTime cursor = date;
-
-    final todayComplete =
-        _decodeDay(prefs.getString('$_dayKeyPrefix${_formatDate(cursor)}'))
-            .values
-            .every((v) => v);
-    if (todayComplete) {
-      count++;
-      cursor = cursor.subtract(const Duration(days: 1));
-    }
-
-    // Guard against infinite loops from corrupted storage / clock changes.
-    const int maxLookback = 3650;
-    while (count < maxLookback) {
-      final complete =
-          _decodeDay(prefs.getString('$_dayKeyPrefix${_formatDate(cursor)}'))
-              .values
-              .every((v) => v);
-      if (!complete) break;
-      count++;
-      cursor = cursor.subtract(const Duration(days: 1));
-    }
-
-    return count;
+  /// Formats a [DateTime] as yyyy-MM-dd string.
+  String _formatDate(DateTime date) {
+    final y = date.year.toString().padLeft(4, '0');
+    final m = date.month.toString().padLeft(2, '0');
+    final d = date.day.toString().padLeft(2, '0');
+    return '$y-$m-$d';
   }
 
   // ---------------------------------------------------------------------------
@@ -173,12 +126,5 @@ class PrayerTracker extends ChangeNotifier {
       buffer.write((day[prayer] ?? false) ? '1' : '0');
     }
     return buffer.toString();
-  }
-
-  String _formatDate(DateTime date) {
-    final y = date.year.toString().padLeft(4, '0');
-    final m = date.month.toString().padLeft(2, '0');
-    final d = date.day.toString().padLeft(2, '0');
-    return '$y-$m-$d';
   }
 }
